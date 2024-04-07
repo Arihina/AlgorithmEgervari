@@ -39,6 +39,17 @@ for (int i = 0; i < matrix.size(); i++) {
 }
 } };
 
+auto invert{ [](Matrix& matrix) {
+for (int i = 0; i < matrix.size(); i++)
+{
+	for (int j = 0; j < matrix[i].size(); j++)
+	{
+		matrix[i][j] = (matrix[i][j] == 0) ? 1: 0;
+	}
+}
+} };
+
+
 void main() {
 	Matrix matrix = fillRandomMatrix(9, 20);
 	printMatrix(matrix);
@@ -54,7 +65,11 @@ void main() {
 
 	leadByColumns(matrix);
 	printMatrix(matrix);
+
+	invert(matrix);
+	printMatrix(matrix);
 }
+
 
 void printMatrix(Matrix& matrix) {
 	for (int i = 0; i < matrix.size(); i++)
