@@ -12,6 +12,7 @@ void leadByRows(Matrix&);
 void leadByColumns(Matrix&);
 pair<Matrix, Matrix> findLargestMatch(Matrix&);
 void fillDigraph(Matrix&, Matrix&);
+void solveByEgervari();
 
 auto findMax{ [](Matrix& matrix) {int max = matrix[0][0];
 for (int i = 0; i < matrix.size(); i++)
@@ -70,6 +71,7 @@ for (int i = 0; i < matrix.size(); i++)
 
 void main() {
 	Matrix matrix = fillRandomMatrix(9, 10);
+	Matrix saveMatrix = copy(matrix);
 	printMatrix(matrix);
 
 	int max = findMax(matrix);
@@ -100,7 +102,7 @@ void main() {
 
 	int count = countMatches(matchMatrix);
 
-	if (count == matrix.size())
+	if (count >= matrix.size())
 	{
 		cout << "" << endl;
 	}
