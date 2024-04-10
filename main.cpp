@@ -22,6 +22,9 @@ int getRowIndex(Matrix&, int, vector<int>&);
 bool check(int, vector<int>&);
 int findMinElem(Matrix&, Matrix&, vector<int>&, vector<int>&);
 bool checkEgervariMatrix(Matrix&);
+void printResultPairs(vector<pair<int, int>>&);
+int findFunctional(Matrix&, Matrix&);
+vector<pair<int, int>> getPairs(Matrix&);
 
 auto findMax{ [](Matrix& matrix) {int max = matrix[0][0];
 for (int i = 0; i < matrix.size(); i++)
@@ -100,14 +103,19 @@ void main() {
 		return;
 	}
 
-	// TODO обработка ввода пользователя
-	Matrix matrix = fillRandomMatrix(9, 10);
+	if (countColumn < countRow)
+	{
+		cout << "Error, the number of places for job must be greater than or equal to the number of employees";
+		return;
+	}
+
+	Matrix matrix = fillRandomMatrix(countRow, countColumn);
+
 	Matrix saveMatrix = copy(matrix);
 	cout << "Start matrix" << endl;
 	printMatrix(matrix);
 
 	int max = findMax(matrix);
-	cout << max << endl << endl;
 
 	decrement(matrix, max);
 	cout << "Decrement max matrix" << endl;
@@ -140,25 +148,29 @@ void main() {
 	printMatrix(digraph);
 
 	int count = countMatches(matchMatrix);
+	int result;
 
 	if (count >= matrix.size())
 	{
-		cout << "" << endl;
-		// TODO: makePairs() & countResultNum() funcs
-		// makePairs()
-		// countResultNum()
+		vector<pair<int, int>> pairs = getPairs(matchMatrix);
+		cout << "In this case algorithm Egervari not applicable " << endl;
+		result = findFunctional(saveLeadMatrix, matchMatrix);
+		printResultPairs(pairs);
+		cout << "Maximum usefulness in this case = " << countRow * max - result << endl;
 	}
 	else
 	{
-		int result = solveByEgervari(saveLeadMatrix, matchMatrix, digraph, invertMatrix);
+		result = solveByEgervari(saveLeadMatrix, matchMatrix, digraph, invertMatrix);
 
 		if (result == INT_MIN)
 		{
-
+			cout << "Algorithm Egervari cannot provide an optimal solution in this case";
 		}
 		else
 		{
-
+			cout << "The value of the functional (the loss of efficiency) = " << result << endl;
+			cout << "Maximum utility " << countRow * max << endl;
+			cout << "Maximum usefulness in this case = " << countRow * max - result << endl;;
 		}
 	}
 }
@@ -491,6 +503,35 @@ int findFunctional(Matrix& matrix1, Matrix& matrix2)
 	return result;
 }
 
+vector<pair<int, int>> getPairs(Matrix& matrix)
+{
+	vector<pair<int, int>> result;
+
+	for (int i = 0; i < matrix.size(); i++)
+	{
+		for (int j = 0; j < matrix[i].size(); j++)
+		{
+			if (matrix[i][j] == 1)
+			{
+				result.push_back(make_pair(i, j));
+			}
+		}
+	}
+
+	return result;
+}
+
+void printResultPairs(vector<pair<int, int>>& result)
+{
+	cout << endl;
+	cout << "Result pairs" << endl;
+	for (int i = 0; i < result.size(); i++)
+	{
+		cout << result[i].first << " " << result[i].second << endl;
+	}
+	cout << endl;
+}
+
 int solveByEgervari(Matrix& leadMatrix, Matrix& matchMatrix, Matrix& digraph, Matrix& invert)
 {
 	Matrix egervari = copy(leadMatrix);
@@ -499,6 +540,7 @@ int solveByEgervari(Matrix& leadMatrix, Matrix& matchMatrix, Matrix& digraph, Ma
 	vector<int> unvisited2 = fillUnvisited2(matchMatrix);
 
 	int functional = findFunctional(leadMatrix, matchMatrix);
+	vector<pair<int, int>> oldPairs = getPairs(matchMatrix);
 	
 	while (true)
 	{
@@ -506,12 +548,6 @@ int solveByEgervari(Matrix& leadMatrix, Matrix& matchMatrix, Matrix& digraph, Ma
 		Matrix matchEgervariMatrix = matrices.first;
 
 		functional += findFunctional(egervari, matchEgervariMatrix);
-
-		cout << "egervari1" << endl;
-		printMatrix(egervari);
-
-		cout << "matchEgervariMatrix" << endl;
-		printMatrix(matchEgervariMatrix);
 
 		Matrix chains = getRelatedNodes(unvisited1, invert);
 		cout << "Chains" << endl;
@@ -550,6 +586,14 @@ int solveByEgervari(Matrix& leadMatrix, Matrix& matchMatrix, Matrix& digraph, Ma
 
 		if (!checkEgervariMatrix(egervari))
 		{
+			vector<pair<int, int>> newPairs = getPairs(matchEgervariMatrix);
+
+			cout << "Pairs from algorithm Egervari" << endl << endl;;
+			cout << "Before algorithm" << endl;
+			printResultPairs(oldPairs);
+			cout << "New pairs after algorithm" << endl;
+			printResultPairs(newPairs);
+
 			return functional;
 		}
 
