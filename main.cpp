@@ -19,6 +19,9 @@ vector<int> fillUnvisited2(Matrix&);
 Matrix getRelatedNodes(vector<int>&, Matrix&);
 int getColumnIndex(Matrix&, int, vector<int>&);
 int getRowIndex(Matrix&, int, vector<int>&);
+bool check(int, vector<int>&);
+int findMinElem(Matrix&, Matrix&, vector<int>&, vector<int>&);
+bool checkEgervariMatrix(Matrix&);
 
 auto findMax{ [](Matrix& matrix) {int max = matrix[0][0];
 for (int i = 0; i < matrix.size(); i++)
@@ -76,6 +79,7 @@ for (int i = 0; i < matrix.size(); i++)
 
 
 void main() {
+	// TODO обработка ввода пользователя
 	Matrix matrix = fillRandomMatrix(9, 10);
 	Matrix saveMatrix = copy(matrix);
 	cout << "Start matrix" << endl;
@@ -354,7 +358,11 @@ Matrix getRelatedNodes(vector<int>& nodes, Matrix& matrix)
 				break;
 			}
 
-			chain.push_back(index1);
+			if (index1 < matrix[0].size())
+			{
+				chain.push_back(index1);
+			}
+			
 			int index2 = getRowIndex(matrix, index1, chain);
 
 			if (index2 == INT_MAX)
@@ -368,7 +376,11 @@ Matrix getRelatedNodes(vector<int>& nodes, Matrix& matrix)
 			}
 			else
 			{
-				chain.push_back(index2);
+				if (index2 < matrix.size())
+				{
+					chain.push_back(index2);
+				}
+				
 				node = index2;
 			}
 		}
@@ -379,12 +391,114 @@ Matrix getRelatedNodes(vector<int>& nodes, Matrix& matrix)
 	return chains;
 }
 
+int findMinElem(Matrix& matrix, Matrix& chains, vector<int>& indexes1, vector<int>& indexes2)
+{
+	vector<int> elements;
+	vector<int> indexes3;
+
+	for (int i = 0; i < chains.size(); i++)
+	{
+		for (int j = 0; j < chains[i].size() - 1; j+=2)
+		{
+			indexes1.push_back(chains[i][j]);
+			indexes2.push_back(chains[i][j + 1]);
+		}
+	}
+
+	for (int i = 0; i < matrix[0].size(); i++)
+	{
+		if(!check(i, indexes2))
+		{
+			indexes3.push_back(i);
+		}
+	}
+
+	for (int i = 0; i < indexes1.size(); i++)
+	{
+		for (int j = 0; j < indexes3.size(); j++)
+		{
+			if (matrix[i][j] != 0)
+			{
+				elements.push_back(matrix[i][j]);
+			}
+		}
+	}
+
+	if (elements.size() == 0)
+	{
+		elements.push_back(0);
+	}
+
+	return *min_element(elements.begin(), elements.end());
+}
+
+bool checkEgervariMatrix(Matrix& matrix)
+{
+	for (int i = 0; i < matrix.size(); i++)
+	{
+		for (int j = 0; j < matrix[i].size(); j++)
+		{
+			if (matrix[i][j] == -1)
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
 void solveByEgervari(Matrix& leadMatrix, Matrix& matchMatrix, Matrix& digraph, Matrix& invert)
 {
+	Matrix egervari = copy(leadMatrix);
 	//TODO: solveByEgervari body
 	vector<int> unvisited1 = fillUnvisited1(matchMatrix);
 	vector<int> unvisited2 = fillUnvisited2(matchMatrix);
 	
-	Matrix chains = getRelatedNodes(unvisited1, invert);
-	printMatrix(chains);
+	while (true)
+	{
+		Matrix chains = getRelatedNodes(unvisited1, invert);
+		cout << "Chains" << endl;
+		printMatrix(chains);
+
+		vector<int> indexes1;
+		vector<int> indexes2;
+
+		int min = findMinElem(leadMatrix, chains, indexes1, indexes2);
+
+		if (min == 0)
+		{
+			//TODO обработать нерешаемый случай
+			return;
+		}
+
+		// Egervari operation with rows
+		for (int i = 0; i < indexes1.size(); i++)
+		{
+			for (int j = 0; j < egervari[indexes1[i]].size(); j++)
+			{
+				egervari[indexes1[i]][j] -= min;
+			}
+		}
+
+		// Egervari operation with columns
+		for (int i = 0; i < indexes2.size(); i++)
+		{
+			for (int j = 0; j < egervari.size(); j++)
+			{
+				egervari[j][indexes2[i]] += min;
+			}
+		}
+
+		cout << "Egervari matrix" << endl;
+		printMatrix(egervari);
+
+		if (!checkEgervariMatrix(egervari))
+		{
+			return;
+		}
+
+		leadByRows(egervari);
+		leadByColumns(egervari);
+	}
 }
