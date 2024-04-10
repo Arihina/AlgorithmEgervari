@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -12,7 +13,12 @@ void leadByRows(Matrix&);
 void leadByColumns(Matrix&);
 pair<Matrix, Matrix> findLargestMatch(Matrix&);
 void fillDigraph(Matrix&, Matrix&);
-void solveByEgervari();
+void solveByEgervari(Matrix&, Matrix&, Matrix&, Matrix&);
+vector<int> fillUnvisited1(Matrix&);
+vector<int> fillUnvisited2(Matrix&);
+Matrix getRelatedNodes(vector<int>&, Matrix&);
+int getColumnIndex(Matrix&, int, vector<int>&);
+int getRowIndex(Matrix&, int, vector<int>&);
 
 auto findMax{ [](Matrix& matrix) {int max = matrix[0][0];
 for (int i = 0; i < matrix.size(); i++)
@@ -72,32 +78,40 @@ for (int i = 0; i < matrix.size(); i++)
 void main() {
 	Matrix matrix = fillRandomMatrix(9, 10);
 	Matrix saveMatrix = copy(matrix);
+	cout << "Start matrix" << endl;
 	printMatrix(matrix);
 
 	int max = findMax(matrix);
 	cout << max << endl << endl;
 
 	decrement(matrix, max);
+	cout << "Decrement max matrix" << endl;
 	printMatrix(matrix);
 
 	leadByRows(matrix);
+	cout << "Lead By Rows matrix" << endl;
 	printMatrix(matrix);
 
 	leadByColumns(matrix);
+	Matrix saveLeadMatrix = copy(matrix);
+	cout << "Lead By Columns matrix" << endl;
 	printMatrix(matrix);
 
 	invert(matrix);
+	cout << "Invert matrix" << endl;
 	printMatrix(matrix);
 
-	Matrix copyInvertMatrix = copy(matrix);
+	Matrix invertMatrix = copy(matrix);
 
 	pair<Matrix, Matrix> matrices = findLargestMatch(matrix);
 
 	Matrix matchMatrix = matrices.first;
+	cout << "Match matrix" << endl;
 	printMatrix(matchMatrix);
 
 	Matrix digraph = matrices.second;
-	fillDigraph(digraph, copyInvertMatrix);
+	fillDigraph(digraph, invertMatrix);
+	cout << "Digraph" << endl;
 	printMatrix(digraph);
 
 	int count = countMatches(matchMatrix);
@@ -105,10 +119,14 @@ void main() {
 	if (count >= matrix.size())
 	{
 		cout << "" << endl;
+		// TODO: makePairs() & countResultNum() funcs
+		// makePairs()
+		// countResultNum()
 	}
 	else
 	{
-
+		// TODO: solveByEgervari func
+		solveByEgervari(saveLeadMatrix, matchMatrix, digraph, invertMatrix);
 	}
 }
 
@@ -227,4 +245,146 @@ Matrix copy(Matrix& matrix)
 	}
 
 	return copyMatrix;
+}
+
+vector<int> fillUnvisited1(Matrix& matrix)
+{
+	vector<int> result;
+	for (int i = 0; i < matrix.size(); i++)
+	{
+		int count = 0;
+		for (int j = 0; j < matrix[i].size(); j++)
+		{
+			if (matrix[i][j] == 1)
+			{
+				count++;
+			}
+		}
+		if (count == 0)
+		{
+			result.push_back(i);
+		}
+	}
+
+	return result;
+}
+
+vector<int> fillUnvisited2(Matrix& matrix)
+{
+	vector<int> result;
+	for (int i = 0; i < matrix[0].size(); i++)
+	{
+		int count = 0;
+		for (int j = 0; j < matrix.size(); j++)
+		{
+			if (matrix[j][i] == 1)
+			{
+				count++;
+			}
+		}
+		if (count == 0)
+		{
+			result.push_back(i);
+		}
+	}
+
+	return result;
+}
+
+bool check(int node, vector<int>& nodes)
+{
+	for (int i = 0; i < nodes.size(); i++)
+	{
+		if (nodes[i] == node)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+int getColumnIndex(Matrix& matrix, int index, vector<int>& chain)
+{
+	for (int i = 0; i < matrix[index].size(); i++)
+	{
+		if (matrix[index][i] == 1 && !check(i, chain))
+		{
+			return i;
+		}
+	}
+}
+
+int getRowIndex(Matrix& matrix, int index, vector<int>& chain)
+{
+	for (int i = 0; i < matrix.size(); i++)
+	{
+		if (matrix[i][index] == 1 && !check(i, chain))
+		{
+			return i;
+		}
+	}
+
+}
+
+Matrix getRelatedNodes(vector<int>& nodes, Matrix& matrix)
+{
+	Matrix chains;
+
+	for (int k = 0; k < nodes.size(); k++)
+	{
+		int node = nodes[k];
+		vector<int> chain = { node };
+		int index1 = 0, index2 = 0;
+
+		while (true)
+		{
+			try
+			{
+				index1 = getColumnIndex(matrix, node, chain);
+			}
+			catch (const std::exception&)
+			{
+				break;
+			}
+			chain.push_back(index1);
+			try
+			{
+				index2 = getRowIndex(matrix, index1, chain);
+			}
+			catch (const std::exception&)
+			{
+				break;
+			}
+
+			if (check(index2, nodes))
+			{
+				break;
+			}
+			else
+			{
+				chain.push_back(index2);
+				node = index2;
+			}
+		}
+
+		chains.push_back(chain);
+	}
+
+	return chains;
+}
+
+void solveByEgervari(Matrix& leadMatrix, Matrix& matchMatrix, Matrix& digraph, Matrix& invert)
+{
+	//TODO: solveByEgervari body
+	vector<int> unvisited1 = fillUnvisited1(matchMatrix);
+	vector<int> unvisited2 = fillUnvisited2(matchMatrix);
+	
+	for (int i = 0; i < unvisited1.size(); i++)
+	{
+		cout << unvisited1[i] << " ";
+	}
+
+	Matrix chains = getRelatedNodes(unvisited1, invert);
+	printMatrix(chains);
 }
