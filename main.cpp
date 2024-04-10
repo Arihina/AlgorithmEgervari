@@ -13,7 +13,7 @@ void leadByRows(Matrix&);
 void leadByColumns(Matrix&);
 pair<Matrix, Matrix> findLargestMatch(Matrix&);
 void fillDigraph(Matrix&, Matrix&);
-void solveByEgervari(Matrix&, Matrix&, Matrix&, Matrix&);
+int solveByEgervari(Matrix&, Matrix&, Matrix&, Matrix&);
 vector<int> fillUnvisited1(Matrix&);
 vector<int> fillUnvisited2(Matrix&);
 Matrix getRelatedNodes(vector<int>&, Matrix&);
@@ -79,6 +79,27 @@ for (int i = 0; i < matrix.size(); i++)
 
 
 void main() {
+
+	int countRow, countColumn;
+
+	cout << "Enter a count of places for job ";
+	cin >> countRow;
+
+	if (countRow <= 0)
+	{
+		cout << "Error, the number cannot be less than or equal to 0";
+		return;
+	}
+
+	cout << "Enter a count of employees ";
+	cin >> countColumn;
+
+	if (countColumn <= 0)
+	{
+		cout << "Error, the number cannot be less than or equal to 0";
+		return;
+	}
+
 	// TODO обработка ввода пользователя
 	Matrix matrix = fillRandomMatrix(9, 10);
 	Matrix saveMatrix = copy(matrix);
@@ -129,8 +150,16 @@ void main() {
 	}
 	else
 	{
-		// TODO: solveByEgervari func
-		solveByEgervari(saveLeadMatrix, matchMatrix, digraph, invertMatrix);
+		int result = solveByEgervari(saveLeadMatrix, matchMatrix, digraph, invertMatrix);
+
+		if (result == INT_MIN)
+		{
+
+		}
+		else
+		{
+
+		}
 	}
 }
 
@@ -448,15 +477,42 @@ bool checkEgervariMatrix(Matrix& matrix)
 	return true;
 }
 
-void solveByEgervari(Matrix& leadMatrix, Matrix& matchMatrix, Matrix& digraph, Matrix& invert)
+int findFunctional(Matrix& matrix1, Matrix& matrix2)
+{
+	int result = 0;
+	for (int i = 0; i < matrix1.size(); i++)
+	{
+		for (int j = 0; j < matrix2.size(); j++)
+		{
+			result += matrix1[i][j] * matrix2[i][j];
+		}
+	}
+
+	return result;
+}
+
+int solveByEgervari(Matrix& leadMatrix, Matrix& matchMatrix, Matrix& digraph, Matrix& invert)
 {
 	Matrix egervari = copy(leadMatrix);
-	//TODO: solveByEgervari body
+
 	vector<int> unvisited1 = fillUnvisited1(matchMatrix);
 	vector<int> unvisited2 = fillUnvisited2(matchMatrix);
+
+	int functional = findFunctional(leadMatrix, matchMatrix);
 	
 	while (true)
 	{
+		pair<Matrix, Matrix> matrices = findLargestMatch(egervari);
+		Matrix matchEgervariMatrix = matrices.first;
+
+		functional += findFunctional(egervari, matchEgervariMatrix);
+
+		cout << "egervari1" << endl;
+		printMatrix(egervari);
+
+		cout << "matchEgervariMatrix" << endl;
+		printMatrix(matchEgervariMatrix);
+
 		Matrix chains = getRelatedNodes(unvisited1, invert);
 		cout << "Chains" << endl;
 		printMatrix(chains);
@@ -468,8 +524,7 @@ void solveByEgervari(Matrix& leadMatrix, Matrix& matchMatrix, Matrix& digraph, M
 
 		if (min == 0)
 		{
-			//TODO обработать нерешаемый случай
-			return;
+			return INT_MIN;
 		}
 
 		// Egervari operation with rows
@@ -495,7 +550,7 @@ void solveByEgervari(Matrix& leadMatrix, Matrix& matchMatrix, Matrix& digraph, M
 
 		if (!checkEgervariMatrix(egervari))
 		{
-			return;
+			return functional;
 		}
 
 		leadByRows(egervari);
