@@ -306,6 +306,10 @@ bool check(int node, vector<int>& nodes)
 
 int getColumnIndex(Matrix& matrix, int index, vector<int>& chain)
 {
+	if (index >= matrix.size())
+	{
+		return INT_MAX;
+	}
 	for (int i = 0; i < matrix[index].size(); i++)
 	{
 		if (matrix[index][i] == 1 && !check(i, chain))
@@ -317,6 +321,10 @@ int getColumnIndex(Matrix& matrix, int index, vector<int>& chain)
 
 int getRowIndex(Matrix& matrix, int index, vector<int>& chain)
 {
+	if (index >= matrix[0].size())
+	{
+		return INT_MAX;
+	}
 	for (int i = 0; i < matrix.size(); i++)
 	{
 		if (matrix[i][index] == 1 && !check(i, chain))
@@ -335,24 +343,21 @@ Matrix getRelatedNodes(vector<int>& nodes, Matrix& matrix)
 	{
 		int node = nodes[k];
 		vector<int> chain = { node };
-		int index1 = 0, index2 = 0;
 
 		while (true)
 		{
-			try
-			{
-				index1 = getColumnIndex(matrix, node, chain);
-			}
-			catch (const std::exception&)
+
+			int index1 = getColumnIndex(matrix, node, chain);
+
+			if (index1 == INT_MAX)
 			{
 				break;
 			}
+
 			chain.push_back(index1);
-			try
-			{
-				index2 = getRowIndex(matrix, index1, chain);
-			}
-			catch (const std::exception&)
+			int index2 = getRowIndex(matrix, index1, chain);
+
+			if (index2 == INT_MAX)
 			{
 				break;
 			}
@@ -380,11 +385,6 @@ void solveByEgervari(Matrix& leadMatrix, Matrix& matchMatrix, Matrix& digraph, M
 	vector<int> unvisited1 = fillUnvisited1(matchMatrix);
 	vector<int> unvisited2 = fillUnvisited2(matchMatrix);
 	
-	for (int i = 0; i < unvisited1.size(); i++)
-	{
-		cout << unvisited1[i] << " ";
-	}
-
 	Matrix chains = getRelatedNodes(unvisited1, invert);
 	printMatrix(chains);
 }
