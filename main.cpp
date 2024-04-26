@@ -91,6 +91,7 @@ void main() {
 	if (countRow <= 0)
 	{
 		cout << "Error, the number cannot be less than or equal to 0";
+		cin >> countRow;
 		return;
 	}
 
@@ -100,12 +101,14 @@ void main() {
 	if (countColumn <= 0)
 	{
 		cout << "Error, the number cannot be less than or equal to 0";
+		cin >> countRow;
 		return;
 	}
 
-	if (countColumn < countRow)
+	if (countColumn <= countRow)
 	{
-		cout << "Error, the number of places for job must be greater than or equal to the number of employees";
+		cout << "Error, the number of places for job must be greater than to the number of employees";
+		cin >> countRow;
 		return;
 	}
 
@@ -157,6 +160,7 @@ void main() {
 		result = findFunctional(saveLeadMatrix, matchMatrix);
 		printResultPairs(pairs);
 		cout << "Maximum usefulness in this case = " << countRow * max - result << endl;
+		cin >> countRow;
 	}
 	else
 	{
@@ -170,7 +174,8 @@ void main() {
 		{
 			cout << "The value of the functional (the loss of efficiency) = " << result << endl;
 			cout << "Maximum utility " << countRow * max << endl;
-			cout << "Maximum usefulness in this case = " << countRow * max - result << endl;;
+			cout << "Maximum usefulness in this case = " << countRow * max - result << endl;
+			cin >> countRow;
 		}
 	}
 }
